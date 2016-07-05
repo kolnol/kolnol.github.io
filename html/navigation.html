@@ -1,18 +1,63 @@
 <nav>
     <div class="nav-wrapper">
-        <a href="#!" class="brand-logo">Logo</a>
-        <a href="#" data-activates="mobile-demo" class="button-collapse"><i class="material-icons">menu</i></a>
-        <ul class="right hide-on-med-and-down">
-            <li><a href="sass.html">Sass</a></li>
-            <li><a href="badges.html">Components</a></li>
-            <li><a href="collapsible.html">Javascript</a></li>
-            <li><a href="mobile.html">Mobile</a></li>
-        </ul>
-        <ul class="side-nav" id="mobile-demo">
-            <li><a href="sass.html">Sass</a></li>
-            <li><a href="badges.html">Components</a></li>
-            <li><a href="collapsible.html">Javascript</a></li>
-            <li><a href="mobile.html">Mobile</a></li>
+        <ul id="nav-mobile" class="right">
+            <li><a href="#">PDF</a></li>
+            <li><a href="#">MC</a></li>
+            <li><a href="#">Exercise</a></li>
         </ul>
     </div>
 </nav>
+<!--Side nav-->
+<ul id="slide-out" class="side-nav fixed">
+    <!--Logo-->
+    <li class="logo">
+        <a id="logo-container" href="#" class="brand-logo center-align">
+            <img src="img/logo.png" alt="" height="60px"/>
+        </a>
+    </li>
+    <!-- End of Logo-->
+    <!--List of nav items-->
+    <li class="no-padding">
+        <ul class="collapsible" data-collapsible="accordion">
+            <!--Kapitel 1-->
+            <li>
+                <div class="collapsible-header"><i class="material-icons">turned_in</i>Kapitel 1</div>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="#!">Question 1</a></li>
+                        <li><a href="#!">Question 2</a></li>
+                        <li><a href="#!">Question 3</a></li>
+                        <li><a href="#!">Question 4</a></li>
+                    </ul>
+                </div>
+            </li><!--End of Kapitel 1-->
+            <!--Kapitel 2-->
+            <li>
+                <div class="collapsible-header"><i class="material-icons">turned_in</i>Kapitel 2</div>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="#!">Question 1</a></li>
+                        <li><a href="#!">Question 2</a></li>
+                        <li><a href="#!">Question 3</a></li>
+                        <li><a href="#!">Question 4</a></li>
+                    </ul>
+                </div>
+            </li><!--End of Kapitel 2-->
+            <!--Kapitel 3-->
+            <li>
+                <div class="collapsible-header"><i class="material-icons">turned_in</i>Kapitel 3</div>
+                <div class="collapsible-body">
+                    <ul>
+                        <li><a href="#!">Question 1</a></li>
+                        <li><a href="#!">Question 2</a></li>
+                        <li><a href="#!">Question 3</a></li>
+                        <li><a href="#!">Question 4</a></li>
+                    </ul>
+                </div>
+            </li><!--End of Kapitel 3-->
+        </ul>
+    </li>
+</ul>
+<!--Dont delete it! Dropdown functionality of sideNav-->
+<script>$('.collapsible').collapsible();</script>
+<a href="#" data-activates="slide-out" class="button-collapse"><i class="mdi-navigation-menu"></i></a>
