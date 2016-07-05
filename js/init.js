@@ -2,7 +2,7 @@
   $(function(){
       $(".button-collapse").sideNav();
     $("#includedNavBar").load("html/navigation.html");
+      $("#includeMainContent").load("html/mainContent.html");
     $("#includedFooter").load("html/footer.html");
-
   }); // end of document ready
 })(jQuery); // end of jQuery name space
