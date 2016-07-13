@@ -9,7 +9,7 @@ var model={
     countOfChapters:5
 };
 
-var brmApp = angular.module("brmApp",['ui.materialize']);
+var brmApp = angular.module("brmApp",['ui.materialize','pdf']);
 
 brmApp.controller("MainAppCtrl", function ($scope,$http) {
     $scope.data=model;
@@ -36,7 +36,7 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
         }
     ];
 
-
+    $scope.pdfUrl = 'f.txt.pdf';
     /*$http.post($scope.servUrl+'/questions/pushQuestions',$scope.testPostQuestion).then(function successCallback(response) {
         // this callback will be called asynchronously
         // when the response is available
@@ -47,6 +47,10 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
         console.log(response);
     });*/
 
+    $scope.getNavStyle = function(scroll) {
+        if(scroll > 100) return 'pdf-controls fixed';
+        else return 'pdf-controls';
+    };
 
     $scope.goToQuestion=function (question) {
         $scope.actualQuestion=question;
