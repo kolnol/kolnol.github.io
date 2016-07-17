@@ -23,6 +23,7 @@
   <script type="text/javascript" src="https://ajax.googleapis.com/ajax/libs/angularjs/1.5.5/angular.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/materialize/0.97.6/js/materialize.min.js"></script>
   <script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/angular-materialize/0.1.9/angular-materialize.min.js"></script>
+  <script type="text/javascript" src="Libraries/angular-ui-router.min.js"></script>
 
   <script type="text/javascript" src="Libraries/pdf.js"></script>
   <script type="text/javascript" src="Libraries/angular-pdf.min.js"></script>
@@ -31,18 +32,7 @@
 </head>
 
 
-<body ng-controller="MainAppCtrl">
-<header>
-    <div ng-include="'html/navigation.html'"></div>
-</header>
-
-<main>
-  <div ng-include="'html/mainContentMC.html'"></div>
-</main>
-
-<footer class="page-footer orange">
-<div ng-include="'html/footer.html'"></div>
-</footer>
+<body ui-view>
 
   </body>
 

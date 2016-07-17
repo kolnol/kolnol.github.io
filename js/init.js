@@ -1,7 +1,7 @@
 (function($){
   $(function(){
       $(".button-collapse").sideNav();
-    $("#includedNavBar").load("html/navigation.html");
+    $("#includedNavBar").load("html/navigationMC.html");
       $("#includeMainContent").load("html/mainContentMC.html");
     $("#includedFooter").load("html/footer.html");
     $('.collapsible').collapsible();
