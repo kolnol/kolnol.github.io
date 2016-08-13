@@ -104,7 +104,7 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
             case 3:
                 rightAnswerLetter='D';
                 break;
-        };
+        }
 
         var elem =angular.element(event.target);
         $scope.isChoosingAnswerEnabled=false;
@@ -127,6 +127,20 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
 
     $scope.isUserAdmin=function () {
        return $scope.data.user.isAdmin;
+    };
+
+    $scope.goToPreviousQuestion=function () {
+        var index = $scope.data.questions.indexOf($scope.actualQuestion)-1;
+        if(index>=0||index<$scope.data.questions.length){
+            $scope.actualQuestion = $scope.data.questions[index];
+        }
+    };
+
+    $scope.goToNextQuestion=function () {
+        var index = $scope.data.questions.indexOf($scope.actualQuestion)+1;
+        if(index>=0||index<$scope.data.questions.length){
+            $scope.actualQuestion = $scope.data.questions[index];
+        }
     };
 
 });
