@@ -36,7 +36,7 @@
                     <div class="row">
                         <!--Dropdown for rightAnswerIndex-->
                         <div class="input-field col s4">
-                            <select ng-model="newQuestion.correctAnswerId" required>
+                            <select ng-model="newQuestion.correctAnswerId" required material-select watch>
                                 <option ng-value="-1" disabled selected>Choose your option</option>
                                 <option ng-value="0">A</option>
                                 <option ng-value="1">B</option>
@@ -45,13 +45,17 @@
                             </select>
                             <label>Which answer is right</label>
                         </div>
-                        <script> $('select').material_select();</script>
+
                         <!-- End Dropdown for rightAnswerIndex-->
 
-                        <!-- Input for chapter-->
-                        <div class="input-field col s2">
-                            <input ng-model="newQuestion.chapter" id="chapter" type="number" class="validate" required>
-                            <label for="chapter">Chapter</label>
+                        <!-- Dropdown for topic-->
+                        <div class="input-field col s4">
+                            <select ng-model="newQuestion.topic" required material-select watch>
+                                <option ng-value="-1" disabled selected>Choose your option</option>
+                                <option ng-repeat="topic in getAllTopics() track by $index" ng-value="$index">{{topic}}</option>
+                            </select>
+                            <label>Which topic is it?</label>
+
                         </div> <!-- End Input for chapter-->
 
                         <!--Checkbox for Booking entry-->
