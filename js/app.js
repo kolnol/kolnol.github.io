@@ -48,6 +48,21 @@ brmApp.config(function ($stateProvider,$urlRouterProvider) {
 brmApp.controller("MainAppCtrl", function ($scope,$http) {
     $scope.data=model;
 
+
+
+    //TODO delete for testing only
+
+    $scope.testSplitPattern=function () {
+        var str = "1300: Sonstige Forderungen, 60.000 an 0240: Geschäftsbauten, 55.000 3800: UST, 5.000";
+        var arr = str.split(' an ');
+        var leftSide= arr[0].match(/\d{4}:\s[^,]+,\s\d+\.\d+/g);
+        var rightSide=arr[1].match(/\d{4}:\s[^,]+,\s\d+\.\d+/g);
+
+        console.log(leftSide);
+        console.log(rightSide);
+    };
+
+
     $scope.servUrl="http://85.214.195.89:8080/api";
     $scope.testUrl="questions.json";
 
@@ -58,13 +73,11 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
         }
     });
 
-    /*$http.get($scope.servUrl+'/questions/getAllTopics').success(function (data, status, headers, config) {
+    $http.get($scope.servUrl+'/topics/getAll').success(function (data, status, headers, config) {
         if(data){
             $scope.data.topics=data;
         }
-    });*///todo remove dummies for topics
-    $scope.data.topics = ['Topic 1','Topic 2','Topic 3','Topic 4','Topic 5','Topic 6'];
-
+    });
 
     $scope.data.user={name : "Peter Griffin",isAdmin : true,id : "9363bdobe"};//TODO Dummy
 
@@ -88,8 +101,9 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
     $scope.onAnswerClick=function (event,answerId) {
         console.log(event);
         var rightAnswerLetter;
-
+        console.log($scope.actualQuestion);
         var rightAnswerId=$scope.actualQuestion.correctAnswerId;
+
         //TODO Make it better
         switch (rightAnswerId){
             case 0:
@@ -119,9 +133,10 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
 
     $scope.goToQuestion=function (question) {
         $scope.actualQuestion=question;
+        $scope.isChoosingAnswerEnabled=true;
     };
 
-    $scope.getAllTopics=function () {//TODO Dummy
+    $scope.getAllTopics=function () {
         return $scope.data.topics;
     };
 
@@ -133,6 +148,7 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
         var index = $scope.data.questions.indexOf($scope.actualQuestion)-1;
         if(index>=0||index<$scope.data.questions.length){
             $scope.actualQuestion = $scope.data.questions[index];
+            $scope.isChoosingAnswerEnabled=true;
         }
     };
 
@@ -140,47 +156,45 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
         var index = $scope.data.questions.indexOf($scope.actualQuestion)+1;
         if(index>=0||index<$scope.data.questions.length){
             $scope.actualQuestion = $scope.data.questions[index];
+            $scope.isChoosingAnswerEnabled=true;
         }
     };
+
+    $scope.testSplitPattern();
 
 });
 
 
 brmApp.controller('addNewQuestionTabCtrl',function ($scope, $http) {
     $scope.newQuestion={};
+    $scope.data={};
+    $scope.data.topics={};
     $scope.servUrl="http://85.214.195.89:8080/api";
 
-    /*$http.get($scope.servUrl+'/questions/getAllTopics').success(function (data, status, headers, config) {
-     if(data){
-     $scope.data.topics=data;
-     }
-     });*///todo remove dummies for topics
+    $http.get($scope.servUrl+'/topics/getAll').success(function (data, status, headers, config) {
 
-    $scope.topics = ['Topic 1','Topic 2','Topic 3','Topic 4','Topic 5','Topic 6'];
+     $scope.data.topics=data;
+     console.log($scope.data.topics);
+     });
 
     $scope.getAllTopics=function () {//TODO delete dummy
-        return $scope.topics;
+        return $scope.data.topics;
     };
 
     $scope.onSubmit=function () {
-        console.log($scope.newQuestion.content);
-        console.log($scope.newQuestion.possibleAnswers);
-        console.log($scope.newQuestion.hint);
-        console.log($scope.newQuestion.correctAnswerId);
-        console.log($scope.newQuestion.isBookingEntry);
-        console.log($scope.newQuestion.fromPage);
-        console.log($scope.newQuestion.toPage);
-        console.log($scope.newQuestion.topic);
-        console.log($scope.newQuestion.chapter);
 
     var questionsToSend=[$scope.newQuestion];
         questionsToSend[0].possibleAnswers=[{answerId:0 , answer:$scope.newQuestion.possibleAnswers[0]},
             {answerId:1 , answer:$scope.newQuestion.possibleAnswers[1]},
             {answerId:2 , answer:$scope.newQuestion.possibleAnswers[2]},
             {answerId:3 , answer:$scope.newQuestion.possibleAnswers[3]}];
-        questionsToSend.topic=$scope.data.topics[$scope.newQuestion.topic];
-        questionsToSend.chapter = $scope.newQuestion.topic+1;
+        var topicIndex=$scope.newQuestion.topic;
+
+        questionsToSend[0].topic = $scope.data.topics[topicIndex];
+        questionsToSend[0].chapter =topicIndex;
+
         console.log(questionsToSend);
+
         $http.post($scope.servUrl+'/questions/pushQuestions',questionsToSend).then(function successCallback(response) {
             // this callback will be called asynchronously
             // when the response is available
@@ -195,31 +209,68 @@ brmApp.controller('addNewQuestionTabCtrl',function ($scope, $http) {
 
 
     };
+    $scope.newTopic={};
+    $scope.onSubmitTopic=function () {
+        var topicToSend = $scope.newTopic;
+        console.log(topicToSend);
+        $http.post($scope.servUrl+'/topics/addTopic',topicToSend).then(function successCallback(response) {
+            // this callback will be called asynchronously
+            // when the response is available
+            console.log(response);
+
+        }, function errorCallback(response) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+            console.log(response);
+
+        });
+    };
+
+    $scope.newLecture={};
+
+    $scope.onSubmitLecture = function() {
+
+        var filesToUpload=angular.element(document).find('#lectureFileInput');
+
+        console.log(filesToUpload);
+
+        var fd = new FormData();
+        //Take the first selected file
+        fd.append("file", filesToUpload[0]);
+        fd.append("startChapter", $scope.newLecture.startChapter);
+        fd.append("endChapter", $scope.newLecture.endChapter);
+
+        $http({
+            method: 'POST',
+            url: $scope.servUrl+'/lectures/upload',
+            data: fd, // your original form data,
+            //transformRequest: angular.identity,  // this sends your data to the formDataObject provider that we are defining below.
+            headers: {'Content-Type': 'multipart/form-data'}
+        }).
+        success(function(data, status, headers, config){
+            console.log("Success")
+        }).
+        error(function(data, status, headers, config){
+            console.log("error")
+        });
+    };
 
 });
 
 //PDF Controller
 brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
-
+    $scope.servUrl="http://85.214.195.89:8080/api";
     $scope.pdfUrl = 'f.txt.pdf';
 
     $scope.data=model;
+    $scope.data.user={name : "Peter Griffin",isAdmin : false,id : "9363bdobe"};//TODO Dummy
 
-    $scope.data.lectures=[{
-        title:'Einführung',
-        pdfUrl:'08-Persistenz.pdf'
-    },{
-        title:'Second Session',
-        pdfUrl:'f.txt.pdf'
-    },{
-        title:'Third Session',
-        pdfUrl:'08-Persistenz.pdf'
-    },{
-        title:'Final Session',
-        pdfUrl:'f.txt.pdf'
-    }];
+    $http.get($scope.servUrl+'/lectures/getAll').success(function (data, status, headers, config) {
+        $scope.data.lectures=data;
+    });
 
-    $scope.getNavStyle = function(scroll) {
+    $scope.actualLecture = $scope.data.lectures[0];
+        $scope.getNavStyle = function(scroll) {
         if(scroll > 100) return 'pdf-controls fixed';
         else return 'pdf-controls';
     };
@@ -229,7 +280,100 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
     };
 
     $scope.goToLecture=function (lecture) {
-        $scope.pdfUrl = lecture.pdfUrl;
+        if(lecture!==$scope.actualLecture){
+            $scope.getNewLectureUrl=$scope.servUrl+'/lectures/';
+            $scope.pdfUrl = $scope.getNewLectureUrl+lecture.name;
+            $scope.actualLecture=lecture;
+            $scope.isLoaded=false;
+            $scope.showQuestionForPage = false;
+        }
+
+    };
+
+    $scope.loadingProgress=0;
+    $scope.isLoaded=false;
+
+    $scope.onProgress = function(progress) {
+        // handle a progress bar
+        $scope.loadingProgress = progress.loaded / progress.total*100;
+        console.log($scope.loadingProgress);
+    };
+
+    $scope.onLoad = function() {
+        // do something when pdf is fully loaded
+        // $scope.loading = '';
+        $scope.isLoaded=true;
+    };
+    $scope.showQuestionForPage = false;
+    $scope.actualQuestion = {};
+
+    $scope.onPageChange=function (pageNumber) {
+        console.log(pageNumber);
+
+        $http.get($scope.servUrl+'/lectures/getQuestions',{params:{page:pageNumber}}).success(function (data, status, headers, config) {
+            $scope.processQuestions(data);
+        });
+    };
+
+    $scope.processQuestions=function (questions) {
+        if(questions.length>0){
+            $scope.data.questions = questions;
+            $scope.showQuestionForPage=true;
+            $scope.actualQuestion = questions[0];
+        }else{
+            $scope.showQuestionForPage=true;
+        }
+    };
+
+    $scope.isChoosingAnswerEnabled=true;
+
+    $scope.goToPreviousQuestion=function () {
+        var index = $scope.data.questions.indexOf($scope.actualQuestion)-1;
+        if(index>=0||index<$scope.data.questions.length){
+            $scope.actualQuestion = $scope.data.questions[index];
+            $scope.isChoosingAnswerEnabled=true;
+        }
+    };
+
+    $scope.goToNextQuestion=function () {
+        var index = $scope.data.questions.indexOf($scope.actualQuestion)+1;
+        if(index>=0||index<$scope.data.questions.length){
+            $scope.actualQuestion = $scope.data.questions[index];
+            $scope.isChoosingAnswerEnabled=true;
+        }
+    };
+
+    $scope.onAnswerClick=function (event,answerId) {
+        console.log(event);
+        var rightAnswerLetter;
+        console.log($scope.actualQuestion);
+        var rightAnswerId=$scope.actualQuestion.correctAnswerId;
+
+        //TODO Make it better
+        switch (rightAnswerId){
+            case 0:
+                rightAnswerLetter='A';
+                break;
+            case 1:
+                rightAnswerLetter='B';
+                break;
+            case 2:
+                rightAnswerLetter='C';
+                break;
+            case 3:
+                rightAnswerLetter='D';
+                break;
+        }
+
+        var elem =angular.element(event.target);
+        $scope.isChoosingAnswerEnabled=false;
+        if(answerId===rightAnswerId){
+            elem.addClass('green lighten-3');
+            //Todo Implement send to server
+        }else{
+            elem.addClass('red lighten-3');
+            angular.element(document).find('#answer'+rightAnswerLetter).addClass('green lighten-3');
+        }
     };
 });
 
@@ -287,9 +431,6 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
       });
 
 
-
-
-
         var onEditClick= function (editButton) {
 
             isQuestionChanged=true;
@@ -327,10 +468,12 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
 
             questionToSend[0].content = element.find("#content").val();
 
-            questionToSend[0].possibleAnswers=[{answerId:0,answer:element.find("#answerA").val()},
-                {answerId:0,answer:element.find("#answerB").val()},
-                {answerId:0,answer:element.find("#answerC").val()},
-                {answerId:0,answer:element.find("#answerD").val()}];
+            questionToSend[0].possibleAnswers=[
+                {answerId:0,answer:element.find("#answerA").val()},
+                {answerId:1,answer:element.find("#answerB").val()},
+                {answerId:2,answer:element.find("#answerC").val()},
+                {answerId:3,answer:element.find("#answerD").val()}
+                ];
             console.log(questionToSend);
             $http.post(scope.servUrl+'/questions/pushQuestions',questionToSend).then(function successCallback(response) {
              // this callback will be called asynchronously
