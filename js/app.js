@@ -44,6 +44,71 @@ brmApp.config(function ($stateProvider,$urlRouterProvider) {
     });
 });
 
+//Model
+brmApp.factory('brmFactory',['$http',function ($http) {
+    var servUrl="http://85.214.195.89:8080/api";
+
+    //Get Model Items
+
+    //Get all questions and add to the factory
+    $http.get($scope.servUrl+'/questions/getAll').success(function (data, status, headers, config) {
+        if(data){
+            this.questions=data;
+            this.actualQuestion=this.questions[0];
+        }
+    });
+    //Get all topics and add to the factory
+    $http.get($scope.servUrl+'/topics/getAll').success(function (data, status, headers, config) {
+        if(data){
+            this.topics=data;
+        }
+    });
+    //Get all lectures and add to the factory
+    $http.get($scope.servUrl+'/lectures/getAll').success(function (data, status, headers, config) {
+        this.lectures=data;
+    });
+    //Get all questions from lecture by the page and add to the factory
+    //TODO by page AND lecture name
+    this.getAllQuestionsFromLecture=function (pageNumber) {
+        $http.get($scope.servUrl+'/lectures/getQuestions',{params:{page:pageNumber}}).success(function (data, status, headers, config) {
+            $scope.processQuestions(data);
+        });
+    };
+
+    //Add or Update model items
+
+    //Send new question(s) to the server
+    this.updateOrAddQuestions=function(arrayOfQuestionsToSend){
+        $http.post($scope.servUrl+'/questions/pushQuestions',arrayOfQuestionsToSend).then(function successCallback(response) {
+            // this callback will be called asynchronously
+            // when the response is available
+            console.log(response);
+
+        }, function errorCallback(response) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+            console.log(response);
+
+        });
+    };
+
+    //Add new topic to the model
+    this.addnewTopic=function (newTopic) {
+        $http.post($scope.servUrl+'/topics/addTopic',newTopic).then(function successCallback(response) {
+            // this callback will be called asynchronously
+            // when the response is available
+            console.log(response);
+
+        }, function errorCallback(response) {
+            // called asynchronously if an error occurs
+            // or server returns response with an error status.
+            console.log(response);
+
+        });
+    };
+
+}]);
+
 //MainController
 brmApp.controller("MainAppCtrl", function ($scope,$http) {
     $scope.data=model;
@@ -64,7 +129,6 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
 
 
     $scope.servUrl="http://85.214.195.89:8080/api";
-    $scope.testUrl="questions.json";
 
     $http.get($scope.servUrl+'/questions/getAll').success(function (data, status, headers, config) {
         if(data){
@@ -209,7 +273,9 @@ brmApp.controller('addNewQuestionTabCtrl',function ($scope, $http) {
 
 
     };
+
     $scope.newTopic={};
+
     $scope.onSubmitTopic=function () {
         var topicToSend = $scope.newTopic;
         console.log(topicToSend);
@@ -227,40 +293,19 @@ brmApp.controller('addNewQuestionTabCtrl',function ($scope, $http) {
     };
 
     $scope.newLecture={};
-
-    $scope.onSubmitLecture = function() {
-
-        var filesToUpload=angular.element(document).find('#lectureFileInput');
-
-        console.log(filesToUpload);
-
-        var fd = new FormData();
-        //Take the first selected file
-        fd.append("file", filesToUpload[0]);
-        fd.append("startChapter", $scope.newLecture.startChapter);
-        fd.append("endChapter", $scope.newLecture.endChapter);
-
-        $http({
-            method: 'POST',
-            url: $scope.servUrl+'/lectures/upload',
-            data: fd, // your original form data,
-            //transformRequest: angular.identity,  // this sends your data to the formDataObject provider that we are defining below.
-            headers: {'Content-Type': 'multipart/form-data'}
-        }).
-        success(function(data, status, headers, config){
-            console.log("Success")
-        }).
-        error(function(data, status, headers, config){
-            console.log("error")
-        });
-    };
-
 });
 
 //PDF Controller
 brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
     $scope.servUrl="http://85.214.195.89:8080/api";
     $scope.pdfUrl = 'f.txt.pdf';
+
+    $scope.showQuestionForPage = false;
+    $scope.actualQuestion = {};
+
+    $scope.loadingProgress=0;
+    $scope.isLoaded=false;
+    $scope.isChoosingAnswerEnabled=true;
 
     $scope.data=model;
     $scope.data.user={name : "Peter Griffin",isAdmin : false,id : "9363bdobe"};//TODO Dummy
@@ -290,8 +335,7 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
 
     };
 
-    $scope.loadingProgress=0;
-    $scope.isLoaded=false;
+
 
     $scope.onProgress = function(progress) {
         // handle a progress bar
@@ -304,8 +348,7 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
         // $scope.loading = '';
         $scope.isLoaded=true;
     };
-    $scope.showQuestionForPage = false;
-    $scope.actualQuestion = {};
+
 
     $scope.onPageChange=function (pageNumber) {
         console.log(pageNumber);
@@ -313,6 +356,7 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
         $http.get($scope.servUrl+'/lectures/getQuestions',{params:{page:pageNumber}}).success(function (data, status, headers, config) {
             $scope.processQuestions(data);
         });
+        $scope.isChoosingAnswerEnabled=true;
     };
 
     $scope.processQuestions=function (questions) {
@@ -325,7 +369,7 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
         }
     };
 
-    $scope.isChoosingAnswerEnabled=true;
+
 
     $scope.goToPreviousQuestion=function () {
         var index = $scope.data.questions.indexOf($scope.actualQuestion)-1;
@@ -379,16 +423,10 @@ brmApp.controller('PdfLecturesCtrl',function ($scope, $http) {
 
 brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
     var linkFn=function (scope, element, attrs, controller, transcludeFn) {
-      /*console.log(scope);
-      console.log(element.contents());
-      console.log(attrs);
-      console.log(controller);
-      console.log(transcludeFn);
-        console.log(scope.data.user);*/
-
-        var isQuestionChanged = false;
 
 
+
+        //Normal mode = choosing NOT editing
         var setNormalQuestionView=function () {
             var contentTemplate = $compile('<h5 class="center-align" id="content">'+scope.actualQuestion.content+'</h5>')(scope);
             var answerATemplate = $compile('<a ng-click="!isChoosingAnswerEnabled||onAnswerClick($event,0)" class="collection-item" id="answerA">'+scope.actualQuestion.possibleAnswers[0].answer+'</a>')(scope);
@@ -410,16 +448,16 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
                 //element.find("#editButton").remove();
             }
 
-            isQuestionChanged=false;
         };
 
-
+        //Set listener on question change to quit editing
         angular.element(document).ready(function () {
             scope.$watch('actualQuestion',function () {
                 setNormalQuestionView();
             });
         });
 
+        //Set OnClick on Edit/Save Button
       var editButton = element.find("a#editButton");
       editButton.bind('click',function () {
           if(editButton.text()==='Save'){
@@ -430,10 +468,8 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
 
       });
 
-
+        //What happens if Edit Button was clicked
         var onEditClick= function (editButton) {
-
-            isQuestionChanged=true;
 
             editButton.text('Save');
             var contentTemplate = $compile('<input placeholder="Question" id="content" type="text" value="'+scope.actualQuestion.content+'" class="validate">')(scope);
@@ -450,10 +486,10 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
 
         };
 
+        //What happens if Edit Button was clicked
         var onSaveClick = function (saveButton) {
             if(checkNoEmptyFields()){
                 sendUpdatedQuestionToServer();
-
                 setNormalQuestionView();
             }else{
                 alert('Please fill all fields!');
@@ -461,8 +497,8 @@ brmApp.directive('myQuestion',['$http','$compile',function ($http,$compile) {
 
         };
 
-
-
+        //Help functions
+        //Get data from DOM. Set it to actualQuestion. Send ActualQuestion to server
         function sendUpdatedQuestionToServer() {
             var questionToSend = [scope.actualQuestion];
 
