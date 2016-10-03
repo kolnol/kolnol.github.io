@@ -173,6 +173,61 @@ brmApp.controller("MainAppCtrl", function ($scope,$http) {
 
 });
 
+brmApp.controller("LoginCtrl",function ($location,$rootScope,$scope, $http) {
+    $scope.servUrl="http://85.214.195.89:8080/api";
+
+    var authenticate = function(credentials, callback) {
+        var data = credentials ? "email=" + credentials.email + "&password=" + credentials.password + "&submit=Login"
+            : "email=1&password=1&submit=Login";
+
+        $http({
+            method: 'POST',
+            url: $scope.servUrl+"/login",
+            data: data,
+            headers: {
+                'Content-Type': 'application/x-www-form-urlencoded',
+            }
+        }).success(function (data, status) {
+            $http({
+                method: 'GET',
+                url: $scope.servUrl+"/user"
+            }).then(function(response) {
+                if(response) $rootScope.authenticated = true;
+                else $rootScope.authenticated = false;
+                callback && callback();
+            }, function() {
+                $rootScope.authenticated = false;
+                console.error();
+            });
+        }).error(function (error) {
+            console.log(error);
+            $rootScope.authenticated = false;
+            callback && callback();
+        })
+    };
+
+    authenticate();
+    self.credentials = {email:$scope.emailLogin,
+                        password:$scope.passwordLogin};
+    $scope.login = function() {
+        authenticate(self.credentials, function() {
+            if ($rootScope.authenticated) {
+                $location.path("/questions");
+                self.error = false;
+            } else {
+                $location.path("/");
+                self.error = true;
+            }
+        });
+    };
+
+    self.logout = function() {
+        $http.post('logout', {}).finally(function() {
+            $rootScope.authenticated = false;
+            $location.path("/");
+        });
+    }
+});
 
 brmApp.controller('addNewQuestionTabCtrl',function ($scope, $http) {
     $scope.newQuestion={};
